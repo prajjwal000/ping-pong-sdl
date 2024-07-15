@@ -1,2 +1,2 @@
-# ping-pong-sdl
-Ping pong in SDL2.
+# pong-sdl
+Pong in SDL2.
