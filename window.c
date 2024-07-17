@@ -1,6 +1,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
+#include <stdlib.h>
+#include <time.h>
 #include <stdio.h>
 
 #define WINDOW_WIDTH 800
@@ -72,6 +76,29 @@ int main(void) {
     return 1;
   }
 
+  SDL_Surface* ball_surface = IMG_Load("resources/ball.png");
+  if (!ball_surface) {
+      printf("ball deez nuts: %s", SDL_GetError());
+      SDL_DestroyRenderer(rend);
+      SDL_DestroyWindow(win);
+      SDL_Quit();
+      return 1;
+  }
+  SDL_Texture* ball_texture = SDL_CreateTextureFromSurface(rend, ball_surface);
+  SDL_FreeSurface(ball_surface);
+  if (!ball_texture) {
+      printf("ball text dezz nuts: %s", SDL_GetError());
+      SDL_DestroyRenderer(rend);
+      SDL_DestroyWindow(win);
+      SDL_Quit();
+      return 1;
+  }
+
+  SDL_Rect ball_rect;
+  SDL_QueryTexture(ball_texture, NULL, NULL, &ball_rect.w, &ball_rect.h);
+  ball_rect.x = (WINDOW_WIDTH - ball_rect.w)/2;
+  ball_rect.y = (WINDOW_HEIGHT - ball_rect.h) /2;
+
   SDL_Rect pad1, pad2;
   SDL_QueryTexture(tex, NULL, NULL, &pad1.w, &pad1.h);
     pad1.x = (WINDOW_WIDTH - pad1.w);
@@ -81,8 +108,16 @@ int main(void) {
 
 float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
   float pad2_pos = pad1_pos;
+  float ball_x = ball_rect.x;
+  float ball_y = ball_rect.y;
 
   int close_requested = 0;
+
+  //initial ball speed
+  srand(time(NULL));
+  float ballx_vel = -1*rand() % SPEED;
+  float bally_vel = rand() % SPEED;
+
   float left_vel, right_vel = 0;
   int left_up = 0;
   int left_down = 0;
@@ -91,9 +126,6 @@ float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
 
   printf("%d %d\n",left_up, left_down);
 
-    SDL_RenderClear(rend);
-    SDL_RenderCopy(rend, wall_texture, NULL, NULL);
-    SDL_RenderPresent(rend);
   while (close_requested == 0) {
 
       SDL_Event event;
@@ -116,6 +148,11 @@ float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
                       case SDL_SCANCODE_DOWN:
                           right_down = 1;
                           break;
+                      case SDL_SCANCODE_R:
+                          ball_x = (WINDOW_WIDTH - ball_rect.w) /2;
+                          ball_y = (WINDOW_HEIGHT - ball_rect.h) /2;
+                          ballx_vel = -1 * rand() % SPEED;
+                          bally_vel = -1 * rand() % SPEED;
                   }
                   break;
               case SDL_KEYUP:
@@ -156,16 +193,59 @@ float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
       pad1.y = (int) pad1_pos;
       pad2.y = (int) pad2_pos;
 
+      ball_x += ballx_vel / 60;
+      ball_y += bally_vel /60;
+      //ball collision
+      if (ball_y <= 10) {
+          ball_y = 10;
+          bally_vel *= -1;
+          ballx_vel *= 1.2;
+      }
+      if (ball_y >= WINDOW_HEIGHT - 10) {
+          ball_y = WINDOW_HEIGHT - 10;
+          bally_vel *= -1;
+          ballx_vel *= 1.2;
+      }
+      if (ball_x <= pad2.w){
+          if ( ball_x <= 0) {
+              //game over
+              ballx_vel = 0;
+              bally_vel = 0;
+          }
+          else if ( ball_y <= pad2.y + pad2.h && ball_y >= pad2.y){
+              ball_x = pad2.w;
+              ballx_vel *= -0.8;
+          }
+      }
+
+      
+      if (ball_x + ball_rect.w >= pad1.x) {
+          if (ball_x + ball_rect.w >= WINDOW_WIDTH) {
+              //game over
+              ballx_vel = 0;
+              bally_vel = 0;
+          }
+          else if ( ball_y >= pad2.y && ball_y <= pad2.y + pad2.h){
+              ball_x = pad1.x - ball_rect.w;
+              ballx_vel *= -0.8;
+      }
+      }
+
+      ball_rect.x = (int) ball_x;
+      ball_rect.y = (int) ball_y;
+
     SDL_RenderClear(rend);
     SDL_RenderCopy(rend, wall_texture, NULL, NULL);
     SDL_RenderCopy(rend, tex, NULL, &pad1);
     SDL_RenderCopy(rend, tex, NULL, &pad2);
+    SDL_RenderCopy(rend, ball_texture, NULL, &ball_rect);
     SDL_RenderPresent(rend);
 
     SDL_Delay( 100/6);
   }
   SDL_DestroyTexture(wall_texture);
   SDL_DestroyTexture(tex);
+  SDL_DestroyTexture(ball_texture);
   SDL_DestroyRenderer(rend);
   SDL_DestroyWindow(win);
   SDL_Quit();
