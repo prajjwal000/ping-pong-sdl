@@ -3,14 +3,14 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdio.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 500
 
-#define SPEED 300 //frame per second
+#define SPEED 300 // frame per second
 
 int main(void) {
 
@@ -76,47 +76,46 @@ int main(void) {
     return 1;
   }
 
-  SDL_Surface* ball_surface = IMG_Load("resources/ball.png");
+  SDL_Surface *ball_surface = IMG_Load("resources/ball.png");
   if (!ball_surface) {
-      printf("ball deez nuts: %s", SDL_GetError());
-      SDL_DestroyRenderer(rend);
-      SDL_DestroyWindow(win);
-      SDL_Quit();
-      return 1;
+    printf("ball deez nuts: %s", SDL_GetError());
+    SDL_DestroyRenderer(rend);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+    return 1;
   }
-  SDL_Texture* ball_texture = SDL_CreateTextureFromSurface(rend, ball_surface);
+  SDL_Texture *ball_texture = SDL_CreateTextureFromSurface(rend, ball_surface);
   SDL_FreeSurface(ball_surface);
   if (!ball_texture) {
-      printf("ball text dezz nuts: %s", SDL_GetError());
-      SDL_DestroyRenderer(rend);
-      SDL_DestroyWindow(win);
-      SDL_Quit();
-      return 1;
+    printf("ball text dezz nuts: %s", SDL_GetError());
+    SDL_DestroyRenderer(rend);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+    return 1;
   }
 
   SDL_Rect ball_rect;
   SDL_QueryTexture(ball_texture, NULL, NULL, &ball_rect.w, &ball_rect.h);
-  ball_rect.x = (WINDOW_WIDTH - ball_rect.w)/2;
-  ball_rect.y = (WINDOW_HEIGHT - ball_rect.h) /2;
+  ball_rect.x = (WINDOW_WIDTH - ball_rect.w) / 2;
+  ball_rect.y = (WINDOW_HEIGHT - ball_rect.h) / 2;
 
   SDL_Rect pad1, pad2;
   SDL_QueryTexture(tex, NULL, NULL, &pad1.w, &pad1.h);
-    pad1.x = (WINDOW_WIDTH - pad1.w);
+  pad1.x = (WINDOW_WIDTH - pad1.w);
+  SDL_QueryTexture(tex, NULL, NULL, &pad2.w, &pad2.h);
   pad2.x = 0;
-  pad2.w = pad1.w;
-  pad2.h = pad1.h;
 
-float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
+  float pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
   float pad2_pos = pad1_pos;
   float ball_x = ball_rect.x;
   float ball_y = ball_rect.y;
 
   int close_requested = 0;
 
-  //initial ball speed
+  // initial ball speed
   srand(time(NULL));
-  float ballx_vel = -1*rand() % SPEED;
-  float bally_vel = rand() % SPEED;
+  float ballx_vel = -1 * rand() % SPEED;
+  float bally_vel = rand() % (SPEED/2);
 
   float left_vel, right_vel = 0;
   int left_up = 0;
@@ -124,115 +123,125 @@ float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
   int right_up = 0;
   int right_down = 0;
 
-  printf("%d %d\n",left_up, left_down);
+  printf("%d %d\n", left_up, left_down);
 
   while (close_requested == 0) {
 
-      SDL_Event event;
-      while (SDL_PollEvent(&event)) {
-          switch (event.type) {
-              case SDL_QUIT:
-                  close_requested = 1;
-                  break;
-              case SDL_KEYDOWN:
-                  switch (event.key.keysym.scancode) {
-                      case SDL_SCANCODE_W:
-                          left_up = 1;
-                          break;
-                      case SDL_SCANCODE_S:
-                          left_down = 1;
-                          break;
-                      case SDL_SCANCODE_UP:
-                          right_up = 1;
-                          break;
-                      case SDL_SCANCODE_DOWN:
-                          right_down = 1;
-                          break;
-                      case SDL_SCANCODE_R:
-                          ball_x = (WINDOW_WIDTH - ball_rect.w) /2;
-                          ball_y = (WINDOW_HEIGHT - ball_rect.h) /2;
-                          ballx_vel = -1 * rand() % SPEED;
-                          bally_vel = -1 * rand() % SPEED;
-                  }
-                  break;
-              case SDL_KEYUP:
-                  switch (event.key.keysym.scancode) {
-                      case SDL_SCANCODE_W:
-                          left_up = 0;
-                          break;
-                      case SDL_SCANCODE_S:
-                          left_down = 0;
-                          break;
-                      case SDL_SCANCODE_UP:
-                          right_up = 0;
-                      case SDL_SCANCODE_DOWN:
-                          right_down = 0;
-                          break;
-                  }
-                  break;
-          }
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      switch (event.type) {
+      case SDL_QUIT:
+        close_requested = 1;
+        break;
+      case SDL_KEYDOWN:
+        switch (event.key.keysym.scancode) {
+        case SDL_SCANCODE_W:
+          left_up = 1;
+          break;
+        case SDL_SCANCODE_S:
+          left_down = 1;
+          break;
+        case SDL_SCANCODE_UP:
+          right_up = 1;
+          break;
+        case SDL_SCANCODE_DOWN:
+          right_down = 1;
+          break;
+        case SDL_SCANCODE_R:
+          ball_x = (WINDOW_WIDTH - ball_rect.w) / 2;
+          ball_y = (WINDOW_HEIGHT - ball_rect.h) / 2;
+          ballx_vel = 150 + rand() % (SPEED-150);
+          bally_vel = rand() % (SPEED/2);
+        }
+        break;
+      case SDL_KEYUP:
+        switch (event.key.keysym.scancode) {
+        case SDL_SCANCODE_W:
+          left_up = 0;
+          break;
+        case SDL_SCANCODE_S:
+          left_down = 0;
+          break;
+        case SDL_SCANCODE_UP:
+          right_up = 0;
+        case SDL_SCANCODE_DOWN:
+          right_down = 0;
+          break;
+        }
+        break;
       }
+    }
 
-      left_vel = right_vel = 0;
+    left_vel = right_vel = 0;
 
-      if ( left_up && !left_down) left_vel = -SPEED;
-      if ( left_down && !left_up) left_vel = SPEED;
-      if ( right_up && !right_down) right_vel = -SPEED;
-      if ( right_down && !right_up) right_vel = SPEED;
+    if (left_up && !left_down)
+      left_vel = -SPEED;
+    if (left_down && !left_up)
+      left_vel = SPEED;
+    if (right_up && !right_down)
+      right_vel = -SPEED;
+    if (right_down && !right_up)
+      right_vel = SPEED;
 
-      pad1_pos += right_vel / 60;
-      pad2_pos += left_vel / 60;
+    pad1_pos += right_vel / 60;
+    pad2_pos += left_vel / 60;
 
-      //collision detection
-      
-      if (pad1_pos <= 0) pad1_pos = 0;
-      if (pad2_pos <= 0) pad2_pos = 0;
-      if (pad2_pos >= WINDOW_HEIGHT - pad2.h) pad2_pos = WINDOW_HEIGHT - pad2.h;
-      if (pad1_pos >= WINDOW_HEIGHT - pad1.h) pad1_pos = WINDOW_HEIGHT - pad1.h;
+    // collision detection
 
-      pad1.y = (int) pad1_pos;
-      pad2.y = (int) pad2_pos;
+    if (pad1_pos <= 0)
+      pad1_pos = 0;
+    if (pad2_pos <= 0)
+      pad2_pos = 0;
+    if (pad2_pos >= WINDOW_HEIGHT - pad2.h)
+      pad2_pos = WINDOW_HEIGHT - pad2.h;
+    if (pad1_pos >= WINDOW_HEIGHT - pad1.h)
+      pad1_pos = WINDOW_HEIGHT - pad1.h;
 
-      ball_x += ballx_vel / 60;
-      ball_y += bally_vel /60;
-      //ball collision
-      if (ball_y <= 10) {
-          ball_y = 10;
-          bally_vel *= -1;
-          ballx_vel *= 1.2;
+    ball_x += ballx_vel / 60;
+    ball_y += bally_vel / 60;
+    // ball collision
+    if (ball_y <= 10) {
+      ball_y = 10;
+      bally_vel *= -1;
+      ballx_vel *= 1.2;
+    }
+    if (ball_y >= WINDOW_HEIGHT - 10) {
+      ball_y = WINDOW_HEIGHT - 10;
+      bally_vel *= -1;
+      ballx_vel *= 1.2;
+    }
+    if (ball_x <= pad2.w) {
+      if (ball_x + ball_rect.w <= 0) {
+        // game over
+        ballx_vel = 0;
+        bally_vel = 0;
+      } else if (ball_y <= pad2_pos + pad2.h && ball_y >= pad2_pos) {
+
+          printf("pad2 run\n");
+        ball_x = pad2.w;
+        ballx_vel *= -1;
       }
-      if (ball_y >= WINDOW_HEIGHT - 10) {
-          ball_y = WINDOW_HEIGHT - 10;
-          bally_vel *= -1;
-          ballx_vel *= 1.2;
-      }
-      if (ball_x <= pad2.w){
-          if ( ball_x <= 0) {
-              //game over
-              ballx_vel = 0;
-              bally_vel = 0;
-          }
-          else if ( ball_y <= pad2.y + pad2.h && ball_y >= pad2.y){
-              ball_x = pad2.w;
-              ballx_vel *= -0.8;
-          }
-      }
+    }
 
-      
-      if (ball_x + ball_rect.w >= pad1.x) {
-          if (ball_x + ball_rect.w >= WINDOW_WIDTH) {
-              //game over
-              ballx_vel = 0;
-              bally_vel = 0;
-          }
-          else if ( ball_y >= pad2.y && ball_y <= pad2.y + pad2.h){
-              ball_x = pad1.x - ball_rect.w;
-              ballx_vel *= -0.8;
+    if (ball_x + ball_rect.w >= pad1.x) {
+      if (ball_x >= WINDOW_WIDTH) {
+        // game over
+        ballx_vel = 0;
+        bally_vel = 0;
+      } else if (ball_y >= pad1_pos && ball_y <= pad1_pos + pad1.h) {
+          printf("pad1 run\n");
+        ball_x = pad1.x -ball_rect.w;
+        ballx_vel *= -1;
       }
-      }
+    }
 
-      ball_rect.x = (int) ball_x;
-      ball_rect.y = (int) ball_y;
+    pad1.y = (int)pad1_pos;
+    pad2.y = (int)pad2_pos;
+    ball_rect.x = (int)ball_x;
+    ball_rect.y = (int)ball_y;
+
+    printf("ball:%f %f pad2: %f pad1: %f\n", ball_x+ball_rect.w, ball_y, pad2_pos,
+           pad1_pos);
 
     SDL_RenderClear(rend);
     SDL_RenderCopy(rend, wall_texture, NULL, NULL);
@@ -241,7 +250,7 @@ float  pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
     SDL_RenderCopy(rend, ball_texture, NULL, &ball_rect);
     SDL_RenderPresent(rend);
 
-    SDL_Delay( 100/6);
+    SDL_Delay(100 / 6);
   }
   SDL_DestroyTexture(wall_texture);
   SDL_DestroyTexture(tex);
