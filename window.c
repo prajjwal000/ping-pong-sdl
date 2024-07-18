@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
@@ -13,8 +14,7 @@
 #define SPEED 300 // frame per second
 
 int main(void) {
-
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0) {
     printf("error initialising SDL: %s\n", SDL_GetError());
     return 1;
   }
@@ -28,6 +28,8 @@ int main(void) {
     SDL_Quit();
     return 1;
   }
+
+
 
   Uint32 rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
   SDL_Renderer *rend = SDL_CreateRenderer(win, -1, rendererFlags);
@@ -98,6 +100,15 @@ int main(void) {
   SDL_QueryTexture(ball_texture, NULL, NULL, &ball_rect.w, &ball_rect.h);
   ball_rect.x = (WINDOW_WIDTH - ball_rect.w) / 2;
   ball_rect.y = (WINDOW_HEIGHT - ball_rect.h) / 2;
+
+
+  SDL_AudioDeviceID audio_device;
+  SDL_AudioSpec audiospec;
+  Uint8* wavstart;
+  Uint32 wavlength;
+
+  SDL_LoadWAV("resources/ball.wav", &audiospec, &wavstart, &wavlength);
+  audio_device = SDL_OpenAudioDevice(NULL, 0, &audiospec, NULL, SDL_AUDIO_ALLOW_ANY_CHANGE);
 
   SDL_Rect pad1, pad2;
   SDL_QueryTexture(tex, NULL, NULL, &pad1.w, &pad1.h);
@@ -204,11 +215,15 @@ int main(void) {
       ball_y = 10;
       bally_vel *= -1;
       ballx_vel *= 1.2;
+  SDL_QueueAudio(audio_device, wavstart, wavlength);
+  SDL_PauseAudioDevice(audio_device, 0);
     }
     if (ball_y >= WINDOW_HEIGHT - 10) {
       ball_y = WINDOW_HEIGHT - 10;
       bally_vel *= -1;
       ballx_vel *= 1.2;
+  SDL_QueueAudio(audio_device, wavstart, wavlength);
+  SDL_PauseAudioDevice(audio_device, 0);
     }
     if (ball_x <= pad2.w) {
       if (ball_x + ball_rect.w <= 0) {
@@ -220,6 +235,8 @@ int main(void) {
           printf("pad2 run\n");
         ball_x = pad2.w;
         ballx_vel *= -1;
+  SDL_QueueAudio(audio_device, wavstart, wavlength);
+  SDL_PauseAudioDevice(audio_device, 0);
       }
     }
 
@@ -232,6 +249,8 @@ int main(void) {
           printf("pad1 run\n");
         ball_x = pad1.x -ball_rect.w;
         ballx_vel *= -1;
+  SDL_QueueAudio(audio_device, wavstart, wavlength);
+  SDL_PauseAudioDevice(audio_device, 0);
       }
     }
 
@@ -252,6 +271,8 @@ int main(void) {
 
     SDL_Delay(100 / 6);
   }
+  SDL_FreeWAV(wavstart);
+  SDL_CloseAudioDevice(audio_device);
   SDL_DestroyTexture(wall_texture);
   SDL_DestroyTexture(tex);
   SDL_DestroyTexture(ball_texture);
