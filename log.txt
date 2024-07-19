@@ -1,1 +1,0 @@
-error initialising SDL audio: Audio target 'pulseaudio' not available

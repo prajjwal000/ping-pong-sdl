@@ -1,10 +1,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,48 +12,67 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 500
 
-#define SPEED 300 // frame per second
+#define SPEED 600 // frame per second
 
-SDL_Texture* player_score_texture(int player_score, TTF_Font* font,SDL_Rect* rect, SDL_Renderer* rend){
-    SDL_Color color = { 255,255,255};
-    char s[10];
-    sprintf(s, "%d", player_score);
-    SDL_Surface* surface = TTF_RenderText_Solid(font, s, color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(rend, surface);
-    SDL_QueryTexture(texture, NULL, NULL, &rect->w, &rect->h);
-    SDL_FreeSurface(surface);
-    return texture;
+SDL_Texture *player_score_texture(int player_score, TTF_Font *font,
+                                  SDL_Rect *rect, SDL_Renderer *rend) {
+  SDL_Color color = {255, 255, 255};
+  char s[10];
+  sprintf(s, "%d", player_score);
+  SDL_Surface *surface = TTF_RenderText_Solid(font, s, color);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(rend, surface);
+  SDL_QueryTexture(texture, NULL, NULL, &rect->w, &rect->h);
+  SDL_FreeSurface(surface);
+  return texture;
 }
 
-void RenderStart(SDL_Texture* wall,SDL_Texture* ball,SDL_Rect ball_rect,SDL_Texture* paddle,SDL_Rect paddle1_rect,SDL_Rect paddle2_rect,SDL_Texture* score,SDL_Rect score_rect,SDL_Texture* p1,SDL_Rect p1_rect,SDL_Texture* p2,SDL_Rect p2_rect,SDL_Renderer* rend){
-    p1_rect.x = 3*(WINDOW_WIDTH - p1_rect.w)/4;
-    p1_rect.y = (WINDOW_HEIGHT - p1_rect.h)/2;
-    p2_rect.x = (WINDOW_WIDTH - p2_rect.w)/4;
-    p2_rect.y = (WINDOW_HEIGHT - p2_rect.h)/2;
-    for (int i=0; i<8;i++) {
-        if (i%2==0){
-            SDL_RenderClear(rend);
-    SDL_RenderCopy(rend, wall, NULL, NULL);
-    SDL_RenderCopy(rend, paddle, NULL, &paddle1_rect);
-    SDL_RenderCopy(rend, paddle, NULL, &paddle2_rect);
-    SDL_RenderCopy(rend, score, NULL, &score_rect);
-    SDL_RenderCopy(rend, p1, NULL, &p1_rect);
-    SDL_RenderCopy(rend, p2, NULL, &p2_rect);
-    SDL_RenderCopy(rend, ball, NULL, &ball_rect);
-    SDL_RenderPresent(rend);
-    SDL_Delay(300);
-        }else{
-    SDL_RenderClear(rend);
-    SDL_RenderCopy(rend, wall, NULL, NULL);
-    SDL_RenderCopy(rend, paddle, NULL, &paddle1_rect);
-    SDL_RenderCopy(rend, paddle, NULL, &paddle2_rect);
-    SDL_RenderCopy(rend, score, NULL, &score_rect);
-    SDL_RenderCopy(rend, p1, NULL, &p1_rect);
-    SDL_RenderCopy(rend, p2, NULL, &p2_rect);
-    SDL_RenderPresent(rend);
-SDL_Delay(200);
+void RenderStart(SDL_Texture *wall, SDL_Rect wall1_rect, SDL_Rect wall2_rect,
+                 SDL_Texture *ball, SDL_Rect ball_rect, SDL_Texture *paddle,
+                 SDL_Rect paddle1_rect, SDL_Rect paddle2_rect,
+                 SDL_Texture *score, SDL_Rect score_rect, SDL_Texture *p1,
+                 SDL_Rect p1_rect, SDL_Texture *p2, SDL_Rect p2_rect,
+                 SDL_Renderer *rend) {
+  p1_rect.x = 3 * (WINDOW_WIDTH - p1_rect.w) / 4;
+  p1_rect.y = (WINDOW_HEIGHT - p1_rect.h) / 2;
+  p2_rect.x = (WINDOW_WIDTH - p2_rect.w) / 4;
+  p2_rect.y = (WINDOW_HEIGHT - p2_rect.h) / 2;
+  SDL_AudioDeviceID audio_device;
+  SDL_AudioSpec audiospec;
+  Uint8 *wavstart;
+  Uint32 wavlength;
+
+  SDL_LoadWAV("resources/start.wav", &audiospec, &wavstart, &wavlength);
+  audio_device = SDL_OpenAudioDevice(NULL, 0, &audiospec, NULL,
+                                     SDL_AUDIO_ALLOW_ANY_CHANGE);
+  SDL_QueueAudio(audio_device, wavstart, wavlength);
+  SDL_PauseAudioDevice(audio_device, 0);
+  for (int i = 0; i < 6; i++) {
+    if (i % 2 == 0) {
+      SDL_RenderClear(rend);
+      SDL_RenderCopy(rend, wall, NULL, &wall1_rect);
+      SDL_RenderCopy(rend, wall, NULL, &wall2_rect);
+      SDL_RenderCopy(rend, paddle, NULL, &paddle1_rect);
+      SDL_RenderCopy(rend, paddle, NULL, &paddle2_rect);
+      SDL_RenderCopy(rend, score, NULL, &score_rect);
+      SDL_RenderCopy(rend, p1, NULL, &p1_rect);
+      SDL_RenderCopy(rend, p2, NULL, &p2_rect);
+      SDL_RenderCopy(rend, ball, NULL, &ball_rect);
+      SDL_RenderPresent(rend);
+      SDL_Delay(300);
+    } else {
+      SDL_RenderClear(rend);
+      SDL_RenderCopy(rend, wall, NULL, &wall1_rect);
+      SDL_RenderCopy(rend, wall, NULL, &wall2_rect);
+      SDL_RenderCopy(rend, paddle, NULL, &paddle1_rect);
+      SDL_RenderCopy(rend, paddle, NULL, &paddle2_rect);
+      SDL_RenderCopy(rend, score, NULL, &score_rect);
+      SDL_RenderCopy(rend, p1, NULL, &p1_rect);
+      SDL_RenderCopy(rend, p2, NULL, &p2_rect);
+      SDL_RenderPresent(rend);
+      SDL_Delay(200);
     }
-    }
+  }
+  SDL_CloseAudioDevice(audio_device);
 }
 
 int main(void) {
@@ -62,9 +81,9 @@ int main(void) {
     return 1;
   }
 
-  if (TTF_Init() != 0){
-      printf("error initialising ttf\n");
-      return 1;
+  if (TTF_Init() != 0) {
+    printf("error initialising ttf\n");
+    return 1;
   }
 
   SDL_Window *win =
@@ -76,8 +95,6 @@ int main(void) {
     SDL_Quit();
     return 1;
   }
-
-
 
   Uint32 rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
   SDL_Renderer *rend = SDL_CreateRenderer(win, -1, rendererFlags);
@@ -144,25 +161,34 @@ int main(void) {
     return 1;
   }
 
-  SDL_Rect ball_rect;
+  SDL_Rect ball_rect, wall1_rect, wall2_rect;
   SDL_QueryTexture(ball_texture, NULL, NULL, &ball_rect.w, &ball_rect.h);
   ball_rect.x = (WINDOW_WIDTH - ball_rect.w) / 2;
   ball_rect.y = (WINDOW_HEIGHT - ball_rect.h) / 2;
-
+  SDL_QueryTexture(wall_texture, NULL, NULL, &wall1_rect.w, &wall1_rect.h);
+  wall2_rect.w = wall1_rect.w;
+  wall2_rect.h = wall1_rect.h;
+  wall1_rect.x = 0;
+  wall2_rect.x = 0;
+  wall1_rect.y = 0;
+  wall2_rect.y = WINDOW_HEIGHT - wall2_rect.h;
 
   SDL_AudioDeviceID audio_device;
   SDL_AudioSpec audiospec;
-  Uint8* wavstart;
+  Uint8 *wavstart;
   Uint32 wavlength;
 
   SDL_LoadWAV("resources/ball.wav", &audiospec, &wavstart, &wavlength);
-  audio_device = SDL_OpenAudioDevice(NULL, 0, &audiospec, NULL, SDL_AUDIO_ALLOW_ANY_CHANGE);
+  audio_device = SDL_OpenAudioDevice(NULL, 0, &audiospec, NULL,
+                                     SDL_AUDIO_ALLOW_ANY_CHANGE);
 
   SDL_Rect pad1, pad2;
   SDL_QueryTexture(tex, NULL, NULL, &pad1.w, &pad1.h);
   pad1.x = (WINDOW_WIDTH - pad1.w);
+  pad1.y = (WINDOW_HEIGHT - pad1.h) / 2;
   SDL_QueryTexture(tex, NULL, NULL, &pad2.w, &pad2.h);
   pad2.x = 0;
+  pad2.y = (WINDOW_HEIGHT - pad2.h) / 2;
 
   float pad1_pos = (WINDOW_HEIGHT - pad1.h) / 2;
   float pad2_pos = pad1_pos;
@@ -174,33 +200,37 @@ int main(void) {
   // initial ball speed
   srand(time(NULL));
   float ballx_vel = -1 * rand() % SPEED;
-  float bally_vel = rand() % (SPEED/2);
+  float bally_vel = rand() % (SPEED / 2);
 
   float left_vel, right_vel = 0;
   int left_up = 0;
   int left_down = 0;
   int right_up = 0;
   int right_down = 0;
-// Score
+  // Score
   int player1_score = 0;
   int player2_score = 0;
   TTF_Font *font = TTF_OpenFont("resources/font.ttf", 80);
-  if (!font) printf("error opening font\n");
+  if (!font)
+    printf("error opening font\n");
 
   SDL_Color color = {255, 255, 255};
-  SDL_Surface* score_surface = TTF_RenderText_Solid(font, "score", color);
-  SDL_Texture* score_texture = SDL_CreateTextureFromSurface(rend, score_surface);
-  SDL_Texture* player1_texture;
-  SDL_Texture* player2_texture;
+  SDL_Surface *score_surface = TTF_RenderText_Solid(font, "score", color);
+  SDL_Texture *score_texture =
+      SDL_CreateTextureFromSurface(rend, score_surface);
+  SDL_Texture *player1_texture;
+  SDL_Texture *player2_texture;
   SDL_Rect score_rect, p1_rect, p2_rect;
-  score_rect.x = (WINDOW_WIDTH - score_surface->w)/2; 
-  score_rect.y = (WINDOW_HEIGHT- score_surface->h)/6; 
+  score_rect.x = (WINDOW_WIDTH - score_surface->w) / 2;
+  score_rect.y = (WINDOW_HEIGHT - score_surface->h) / 6;
   player1_texture = player_score_texture(player1_score, font, &p1_rect, rend);
   player2_texture = player_score_texture(player2_score, font, &p2_rect, rend);
   score_rect.w = score_surface->w;
-  score_rect.h = score_surface -> h;
+  score_rect.h = score_surface->h;
   SDL_FreeSurface(score_surface);
-  RenderStart(wall_texture,ball_texture,ball_rect,tex,pad1, pad2, score_texture, score_rect, player1_texture, p1_rect, player2_texture, p2_rect, rend);
+  RenderStart(wall_texture, wall1_rect, wall2_rect, ball_texture, ball_rect,
+              tex, pad1, pad2, score_texture, score_rect, player1_texture,
+              p1_rect, player2_texture, p2_rect, rend);
 
   while (close_requested == 0) {
 
@@ -212,6 +242,9 @@ int main(void) {
         break;
       case SDL_KEYDOWN:
         switch (event.key.keysym.scancode) {
+        case SDL_SCANCODE_ESCAPE:
+          close_requested = 1;
+          break;
         case SDL_SCANCODE_W:
           left_up = 1;
           break;
@@ -227,9 +260,11 @@ int main(void) {
         case SDL_SCANCODE_R:
           ball_x = (WINDOW_WIDTH - ball_rect.w) / 2;
           ball_y = (WINDOW_HEIGHT - ball_rect.h) / 2;
-          ballx_vel = 150 + rand() % (SPEED-150);
-          bally_vel = rand() % (SPEED/2);
-  RenderStart(wall_texture,ball_texture,ball_rect,tex,pad1, pad2, score_texture, score_rect, player1_texture, p1_rect, player2_texture, p2_rect, rend);
+          ballx_vel = 150 + rand() % (SPEED - 150);
+          bally_vel = rand() % (SPEED / 2);
+          RenderStart(wall_texture, wall1_rect, wall2_rect, ball_texture,
+                      ball_rect, tex, pad1, pad2, score_texture, score_rect,
+                      player1_texture, p1_rect, player2_texture, p2_rect, rend);
         }
         break;
       case SDL_KEYUP:
@@ -266,72 +301,87 @@ int main(void) {
 
     // collision detection
 
-    if (pad1_pos <= 0)
-      pad1_pos = 0;
-    if (pad2_pos <= 0)
-      pad2_pos = 0;
-    if (pad2_pos >= WINDOW_HEIGHT - pad2.h)
-      pad2_pos = WINDOW_HEIGHT - pad2.h;
-    if (pad1_pos >= WINDOW_HEIGHT - pad1.h)
-      pad1_pos = WINDOW_HEIGHT - pad1.h;
+    if (pad1_pos <= wall1_rect.h)
+      pad1_pos = wall1_rect.h;
+    if (pad2_pos <= wall1_rect.h)
+      pad2_pos = wall1_rect.h;
+    if (pad2_pos >= WINDOW_HEIGHT - pad2.h - wall2_rect.h)
+      pad2_pos = WINDOW_HEIGHT - pad2.h - wall2_rect.h;
+    if (pad1_pos >= WINDOW_HEIGHT - pad1.h - wall2_rect.h)
+      pad1_pos = WINDOW_HEIGHT - pad1.h - wall2_rect.h;
 
     ball_x += ballx_vel / 60;
     ball_y += bally_vel / 60;
     // ball collision
-    if (ball_y <= 10) {
-      ball_y = 10;
+    if (ball_y <= wall1_rect.h) {
+      ball_y = wall1_rect.h;
       bally_vel *= -1;
       ballx_vel *= 1.2;
-  SDL_QueueAudio(audio_device, wavstart, wavlength);
-  SDL_PauseAudioDevice(audio_device, 0);
+      SDL_QueueAudio(audio_device, wavstart, wavlength);
+      SDL_PauseAudioDevice(audio_device, 0);
     }
-    if (ball_y >= WINDOW_HEIGHT - 10) {
-      ball_y = WINDOW_HEIGHT - 10;
+    if (ball_y >= WINDOW_HEIGHT - wall2_rect.h - ball_rect.h) {
+      ball_y = WINDOW_HEIGHT - wall2_rect.h - ball_rect.h;
       bally_vel *= -1;
       ballx_vel *= 1.2;
-  SDL_QueueAudio(audio_device, wavstart, wavlength);
-  SDL_PauseAudioDevice(audio_device, 0);
+      SDL_QueueAudio(audio_device, wavstart, wavlength);
+      SDL_PauseAudioDevice(audio_device, 0);
     }
     if (ball_x <= pad2.w) {
       if (ball_x + ball_rect.w <= 0) {
         // game over
-          ball_x = (WINDOW_WIDTH - ball_rect.w) / 2;
-          ball_y = (WINDOW_HEIGHT - ball_rect.h) / 2;
-          ball_rect.x = (int)ball_x;
-          ball_rect.y = (int)ball_y;
-          ballx_vel = 150 + rand() % (SPEED-150);
-          bally_vel = rand() % (SPEED/2);
+        ball_x = (WINDOW_WIDTH - ball_rect.w) / 2;
+        ball_y = (WINDOW_HEIGHT - ball_rect.h) / 2;
+        ball_rect.x = (int)ball_x;
+        ball_rect.y = (int)ball_y;
+        ballx_vel = 150 + rand() % (SPEED - 150);
+        bally_vel = rand() % (SPEED - 150);
         player1_score++;
-        player1_texture = player_score_texture(player1_score, font, &p1_rect, rend);
-  RenderStart(wall_texture,ball_texture,ball_rect,tex,pad1, pad2, score_texture, score_rect, player1_texture, p1_rect, player2_texture, p2_rect, rend);
+        player1_texture =
+            player_score_texture(player1_score, font, &p1_rect, rend);
+        RenderStart(wall_texture, wall1_rect, wall2_rect, ball_texture,
+                    ball_rect, tex, pad1, pad2, score_texture, score_rect,
+                    player1_texture, p1_rect, player2_texture, p2_rect, rend);
       } else if (ball_y <= pad2_pos + pad2.h && ball_y >= pad2_pos) {
-
-          printf("pad2 run\n");
         ball_x = pad2.w;
         ballx_vel *= -1;
-  SDL_QueueAudio(audio_device, wavstart, wavlength);
-  SDL_PauseAudioDevice(audio_device, 0);
+        if (ball_y < (pad2_pos + pad2.h)/2){
+        bally_vel = -1*(150 + rand() % (int)(bally_vel - 150));
+        printf("%d\n",bally_vel);
+        } else {
+        bally_vel = 150 + rand() % (int)(bally_vel - 150);
+                }
+
+        SDL_QueueAudio(audio_device, wavstart, wavlength);
+        SDL_PauseAudioDevice(audio_device, 0);
       }
     }
 
     if (ball_x + ball_rect.w >= pad1.x) {
       if (ball_x >= WINDOW_WIDTH) {
         // game over
-          ball_x = (WINDOW_WIDTH - ball_rect.w) / 2;
-          ball_y = (WINDOW_HEIGHT - ball_rect.h) / 2;
-          ball_rect.x = (int)ball_x;
-          ball_rect.y = (int)ball_y;
-          ballx_vel = 150 + rand() % (SPEED-150);
-          bally_vel = rand() % (SPEED/2);
+        ball_x = (WINDOW_WIDTH - ball_rect.w) / 2;
+        ball_y = (WINDOW_HEIGHT - ball_rect.h) / 2;
+        ball_rect.x = (int)ball_x;
+        ball_rect.y = (int)ball_y;
+        ballx_vel = 150 + rand() % (SPEED - 150);
+        bally_vel = rand() % (SPEED / 2);
         player2_score++;
-        player2_texture = player_score_texture(player2_score, font, &p2_rect, rend);
-  RenderStart(wall_texture,ball_texture,ball_rect,tex,pad1, pad2, score_texture, score_rect, player1_texture, p1_rect, player2_texture, p2_rect, rend);
+        player2_texture =
+            player_score_texture(player2_score, font, &p2_rect, rend);
+        RenderStart(wall_texture, wall1_rect, wall2_rect, ball_texture,
+                    ball_rect, tex, pad1, pad2, score_texture, score_rect,
+                    player1_texture, p1_rect, player2_texture, p2_rect, rend);
       } else if (ball_y >= pad1_pos && ball_y <= pad1_pos + pad1.h) {
-          printf("pad1 run\n");
-        ball_x = pad1.x -ball_rect.w;
+        ball_x = pad1.x - ball_rect.w;
         ballx_vel *= -1;
-  SDL_QueueAudio(audio_device, wavstart, wavlength);
-  SDL_PauseAudioDevice(audio_device, 0);
+        if (ball_y < (pad1_pos + pad1.h)/2){
+        bally_vel = -1*(150 + rand() % (int)(bally_vel - 150));
+        } else {
+        bally_vel = 150 + rand() % (int)(bally_vel - 150);
+                }
+        SDL_QueueAudio(audio_device, wavstart, wavlength);
+        SDL_PauseAudioDevice(audio_device, 0);
       }
     }
 
@@ -340,11 +390,9 @@ int main(void) {
     ball_rect.x = (int)ball_x;
     ball_rect.y = (int)ball_y;
 
-    printf("ball:%f %f pad2: %f pad1: %f\n", ball_x+ball_rect.w, ball_y, pad2_pos,
-           pad1_pos);
-
     SDL_RenderClear(rend);
-    SDL_RenderCopy(rend, wall_texture, NULL, NULL);
+    SDL_RenderCopy(rend, wall_texture, NULL, &wall1_rect);
+    SDL_RenderCopy(rend, wall_texture, NULL, &wall2_rect);
     SDL_RenderCopy(rend, tex, NULL, &pad1);
     SDL_RenderCopy(rend, tex, NULL, &pad2);
     SDL_RenderCopy(rend, ball_texture, NULL, &ball_rect);
