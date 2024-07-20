@@ -345,9 +345,8 @@ int main(void) {
       } else if (ball_y <= pad2_pos + pad2.h && ball_y >= pad2_pos) {
         ball_x = pad2.w;
         ballx_vel *= -1;
-        if (ball_y < (pad2_pos + pad2.h)/2){
+        if (left_vel < 0){
         bally_vel = -1*(150 + rand() % (int)(bally_vel - 150));
-        printf("%d\n",bally_vel);
         } else {
         bally_vel = 150 + rand() % (int)(bally_vel - 150);
                 }
@@ -375,7 +374,7 @@ int main(void) {
       } else if (ball_y >= pad1_pos && ball_y <= pad1_pos + pad1.h) {
         ball_x = pad1.x - ball_rect.w;
         ballx_vel *= -1;
-        if (ball_y < (pad1_pos + pad1.h)/2){
+        if (right_vel < 0){
         bally_vel = -1*(150 + rand() % (int)(bally_vel - 150));
         } else {
         bally_vel = 150 + rand() % (int)(bally_vel - 150);
